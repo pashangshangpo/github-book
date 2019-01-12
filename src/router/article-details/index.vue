@@ -72,7 +72,7 @@ export default {
   },
   methods: {
     init() {
-      Client.issue(ProjectPath, 2)
+      Client.issue(ProjectPath, this.number)
         .infoAsync()
         .then(res => {
           res = res[0]
@@ -97,8 +97,7 @@ export default {
       this.$router.push({
         name: 'write-articles',
         query: {
-          path: this.$route.query.path,
-          authors: this.$route.query.authors,
+          number: this.number,
         },
       })
     },
