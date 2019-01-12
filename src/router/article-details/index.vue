@@ -76,7 +76,7 @@ export default {
           this.details = {
             title: res.title,
             content: res.body,
-            author: res.author_association,
+            author: res.labels[0].name,
           }
         })
         .then(res => {
@@ -86,7 +86,7 @@ export default {
     initWatermark() {
       let base64 = AliMask(this.details.author, {
         alpha: 1,
-        color: '#e0e0e0',
+        color: '#d8d8d8',
       })
 
       this.watermarkStyle = {
