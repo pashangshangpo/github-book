@@ -120,7 +120,7 @@ export default {
         
         this.title = res.title
         this.content = res.body
-        this.tags = res.labels.slice(1).map(item => item.name)
+        this.tags = res.labels.slice(0, res.labels.length - 1).map(item => item.name)
       })
     },
     initEditor() {
@@ -155,6 +155,7 @@ export default {
       let data = {
         title: this.title,
         body: this.content,
+        labels: [GetData('github').username].concat(this.tags),
       }
 
       if (this.action === 'update') {
@@ -184,10 +185,7 @@ export default {
       })
     },
     createArticles(data) {
-      Repo.createIssueAsync({
-        ...data,
-        labels: [GetData('github').username],
-      }).then(res => {
+      Repo.createIssueAsync(data).then(res => {
         res = res[0]
 
         if (res.message) {
