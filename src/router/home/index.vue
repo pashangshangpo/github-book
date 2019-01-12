@@ -90,15 +90,26 @@ export default {
         this.init().then(res => {
           this.page += 1
 
-          // sl.unLock()
+          sl.unLock()
         })
       },
     })
   },
   methods: {
     init() {
-      return Repo.issuesAsync().then(res => {
-        this.articleLists = res[0]
+      return Repo.issuesAsync({
+        page: this.page,
+        per_page: 20,
+      }).then(res => {
+        res = res[0]
+
+        if (res.length === 0) {
+          this.noMoreData = true
+
+          return
+        }
+
+        this.articleLists = this.articleLists.concat(res)
       })
     },
     handleOpenInfo(data) {
