@@ -18,7 +18,7 @@ const resolve = (...arg) => {
   return path.resolve('.', ...arg)
 }
 
-const BuildPath = resolve('dist')
+const BuildPath = resolve('docs')
 const { publicPath, template } = require(resolve('peak.config'))
 const PublicPath = path.join(BuildPath, publicPath)
 const TemplatePath = resolve(template)

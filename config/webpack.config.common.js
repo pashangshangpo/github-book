@@ -22,7 +22,7 @@ module.exports = {
     index: './src/index.js'
   },
   output: {
-    path: resolve('dist'),
+    path: resolve('docs'),
     filename: '[name].js',
     publicPath: ''
   },

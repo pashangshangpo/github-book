@@ -13,7 +13,7 @@
       "pretty-quick",
       "git add"
     ],
-    "*.{css,scss,less}": [
+    "src/**.{css,scss,less}": [
       "stylelint --fix",
       "git add"
     ]
