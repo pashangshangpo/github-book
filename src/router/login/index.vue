@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import { SetData } from '$common/local-storage'
+
 export default {
   data() {
     return {
@@ -26,9 +28,13 @@ export default {
   methods: {
     handleLogin() {
       let token = this.token.trim()
+      let projectPath = this.projectPath.trim()
 
-      if (token) {
-        SetToken(token)
+      if (token && projectPath) {
+        SetData('github', {
+          token,
+          projectPath,
+        })
 
         this.$router.push({
           name: 'home',

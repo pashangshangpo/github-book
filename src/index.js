@@ -1,9 +1,8 @@
-import { GetToken } from '$common/github-token'
+import { GetData } from '$common/local-storage'
 
-let token = GetToken()
 let { href, protocol, host } = location
 
-if (!token && href.indexOf('/#/login') === -1) {
+if (!GetData('github') && href.indexOf('/#/login') === -1) {
   location.href = `${protocol}//${host}/#/login`
   location.reload(true)
 } else {
