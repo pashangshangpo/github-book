@@ -51,6 +51,7 @@ export default {
       page: 1,
       articleLists: [],
       tags: [],
+      selectedTag: null,
       editableTabsValue: '全部',
       noMoreData: false,
     }
@@ -75,13 +76,11 @@ export default {
   mounted() {
     this.initTags().then(() => {
       this.$nextTick(() => {
-        new Scrollload({
+        this.scrollload = new Scrollload({
           container: this.$refs.main,
           content: document.querySelector('[data-id="scrollload-content"]'),
           loadMore: sl => {
             if (this.noMoreData) {
-              sl.noMoreData()
-
               return
             }
 
@@ -97,11 +96,13 @@ export default {
     })
   },
   methods: {
-    getArticle(config = { labels: [] }) {
+    getArticle() {
+      let selectedTag = this.selectedTag ? this.selectedTag.name : ''
+
       return Repo.issuesAsync({
         page: this.page,
         per_page: 20,
-        labels: config.labels.join(','),
+        labels: selectedTag,
       }).then(res => {
         res = res[0]
 
@@ -122,13 +123,16 @@ export default {
       })
     },
     handleBeforeLeaveTabs(name) {
-      let tag = this.tags.find(item => item.name === name)
+      this.selectedTag = this.tags.find(item => item.name === name)
 
       this.page = 1
-      this.getArticle({
-        labels: tag ? [tag.name] : []
-      }).then(res => {
+      this.noMoreData = false
+
+      this.getArticle().then(res => {
         this.articleLists = this.articleLists = res
+
+        this.page += 1
+        this.scrollload.unLock()
       })
     },
     handleOpenInfo(data) {
