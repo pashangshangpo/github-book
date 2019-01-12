@@ -8,12 +8,14 @@
       <input class="input" type="text" autofocus="true" v-model="title" placeholder="请输入文章标题">
       <div class="tags">
         <el-tag
-          :key="tag"
+          :key="tag.name"
           v-for="tag in tags"
-          closable
-          :disable-transitions="false"
-          @close="handleTagClose(tag)">
-          {{tag}}
+          :data-active="tag.__active"
+          :disable-transitions="false">
+          <span 
+            class="tag"
+            @click="handleTagClick(tag)"
+          >{{tag.name}}</span>
         </el-tag>
         <el-input
           class="input-new-tag"
@@ -75,12 +77,15 @@ export default {
   computed: {
     htmlContent() {
       return Markdown(this.content)
-    },
+    }
   },
   mounted() {
     this.init()
   },
   methods: {
+    handleTagClick(tag) {
+      tag.__active = !tag.__active
+    },
     handleTagClose(tag) {
       this.tags.splice(this.tags.indexOf(tag), 1)
     },
@@ -120,7 +125,12 @@ export default {
         
         this.title = res.title
         this.content = res.body
-        this.tags = res.labels.slice(0, res.labels.length - 1).map(item => item.name)
+        this.tags = res.labels.slice(0, res.labels.length - 1).map(item => {
+          return {
+            ...item,
+            __active: true,
+          }
+        })
       })
     },
     initEditor() {
@@ -216,6 +226,24 @@ export default {
   margin-left: 10px;
 }
 
+.el-tag {
+  cursor: pointer;
+  user-select: none;
+  padding: 0;
+
+  .tag {
+    display: block;
+    padding: 0 10px;
+    height: 32px;
+    line-height: 30px;
+  }
+
+  &[data-active="true"] {
+    background-color: #1890ff;
+    color: #fff;
+  }
+}
+
 .button-new-tag {
   margin-left: 10px;
   height: 32px;
@@ -273,6 +301,8 @@ export default {
     }
 
     .tags {
+      position: relative;
+      z-index: 1;
       margin: 12px 12px 0;
     }
 
