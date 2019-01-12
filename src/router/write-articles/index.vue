@@ -272,6 +272,10 @@ export default {
       text-align: center;
     }
 
+    .tags {
+      margin: 12px 12px 0;
+    }
+
     .edit {
       width: 100%;
       height: 100%;
