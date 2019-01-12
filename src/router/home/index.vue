@@ -15,9 +15,6 @@
               <span class="title">{{ item.title }}</span>
               <div class="tool">
                 <span class="edit" @click="handleEdit(item, $event)">编辑</span>
-                <span class="delete" @click="handleDelete(item, $event)"
-                  >删除</span
-                >
                 <time class="time">{{ item.created_at }}</time>
               </div>
             </li>
@@ -35,9 +32,6 @@
               <span class="title">{{ item.title }}</span>
               <div class="tool">
                 <span class="edit" @click="handleEdit(item, $event)">编辑</span>
-                <span class="delete" @click="handleDelete(item, $event)"
-                  >删除</span
-                >
                 <time class="time">{{ item.created_at }}</time>
               </div>
             </li>
@@ -129,34 +123,6 @@ export default {
           number: data.number,
         },
       })
-    },
-    handleDelete(data, e) {
-      e.stopPropagation()
-
-      MessageBox.confirm(`确定要删除 ${data.name} ？`, '提示')
-        .then(() => {
-          GitLab.createFile(ProjectId, {
-            branch: 'master',
-            commit_message: `chore: 删除 ${data.name}`,
-            actions: [
-              {
-                action: 'delete',
-                file_path: data.path,
-              },
-            ],
-          }).then(res => {
-            if (res.id) {
-              Message.success('删除成功！')
-
-              this.articleLists = this.articleLists.filter(item => {
-                return item.path !== data.path
-              })
-            } else {
-              Message.error('删除失败！')
-            }
-          })
-        })
-        .catch(action => {})
     },
     filterArticle(arr) {
       let list = arr.filter(item => {
