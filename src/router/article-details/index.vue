@@ -43,6 +43,7 @@ export default {
       details: {
         title: '',
         content: '',
+        author: '',
       },
     }
   },
@@ -65,11 +66,6 @@ export default {
   created() {
     this.init()
   },
-  mounted() {
-    // if (this.authors.trim()) {
-    //   this.initWatermark()
-    // }
-  },
   methods: {
     init() {
       Client.issue(ProjectPath, this.number)
@@ -80,11 +76,15 @@ export default {
           this.details = {
             title: res.title,
             content: res.body,
+            author: res.author_association,
           }
+        })
+        .then(res => {
+          this.initWatermark()
         })
     },
     initWatermark() {
-      let base64 = AliMask(this.authors, {
+      let base64 = AliMask(this.details.author, {
         alpha: 1,
         color: '#e0e0e0',
       })
