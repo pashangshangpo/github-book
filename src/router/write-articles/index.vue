@@ -6,6 +6,27 @@
     </div>
     <div class="write">
       <input class="input" type="text" autofocus="true" v-model="title" placeholder="请输入文章标题">
+      <div class="tags">
+        <el-tag
+          :key="tag"
+          v-for="tag in tags"
+          closable
+          :disable-transitions="false"
+          @close="handleTagClose(tag)">
+          {{tag}}
+        </el-tag>
+        <el-input
+          class="input-new-tag"
+          v-show="inputTagVisible"
+          v-model="newTagValue"
+          ref="tagInput"
+          size="small"
+          @keyup.enter.native="handleInputTagConfirm"
+          @blur="handleInputTagConfirm"
+        >
+        </el-input>
+        <el-button v-show="!inputTagVisible" class="button-new-tag" size="small" @click="handleShowTagInput">+ 添加标签</el-button>
+      </div>
       <div class="edit">
         <textarea 
           class="text" 
@@ -46,6 +67,9 @@ export default {
       number: this.$route.query.number,
       title: '',
       content: '',
+      tags: [],
+      newTagValue: '',
+      inputTagVisible: false,
     }
   },
   computed: {
@@ -57,6 +81,26 @@ export default {
     this.init()
   },
   methods: {
+    handleTagClose(tag) {
+      this.tags.splice(this.tags.indexOf(tag), 1)
+    },
+    handleInputTagConfirm() {
+      let newTagValue = this.newTagValue
+
+      if (newTagValue) {
+        this.tags = _.uniq(this.tags.concat(newTagValue))
+      }
+
+      this.inputTagVisible = false
+      this.newTagValue = ''
+    },
+    handleShowTagInput() {
+      this.inputTagVisible = true
+      
+      this.$nextTick(() => {
+        this.$refs.tagInput.focus()
+      })
+    },
     init() {
       if (this.number) {
         this.action = 'update'
@@ -76,6 +120,7 @@ export default {
         
         this.title = res.title
         this.content = res.body
+        this.tags = res.labels.slice(1).map(item => item.name)
       })
     },
     initEditor() {
@@ -167,6 +212,24 @@ export default {
 <style lang="scss">
 .CodeMirror {
   height: 86vh;
+}
+
+.el-tag + .el-tag {
+  margin-left: 10px;
+}
+
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
 }
 </style>
 
