@@ -119,22 +119,25 @@ export default {
           })
         })
       } else {
-        this.initEditor()
+        this.getTags().then(res => {
+          this.processTags(res)
+          this.initEditor()
+        })
       }
     },
-    initData() {
-      return Client.issue(ProjectPath, this.number).infoAsync().then(res => {
-        res = res[0]
-        
-        this.title = res.title
-        this.content = res.body
-        this.tags = res.labels.slice(0, res.labels.length - 1).map(item => {
-          return {
-            ...item,
-            __active: true,
-          }
+    async initData() {
+      let res = await Promise.all([
+        this.getTags(),
+        Client.issue(ProjectPath, this.number).infoAsync().then(res => {
+          res = res[0]
+          
+          this.title = res.title
+          this.content = res.body
+          this.tags = res.labels
         })
-      })
+      ])
+
+      this.processTags(res[0])
     },
     initEditor() {
       let editor = CodeMirror.fromTextArea(this.$refs.editor, {
@@ -179,6 +182,21 @@ export default {
       else {
         this.createArticles(data)
       }
+    },
+    getTags() {
+      return Repo.labelsAsync()
+      .then(res => res[0])
+      .then(res => {
+        return res.filter(item => item.default === false)
+      })
+    },
+    processTags(tags) {
+      this.tags = tags.map(tag => {
+        return {
+          ...tag,
+          __active: this.tags.find(item => item.name === tag.name) ? true : false
+        }
+      })
     },
     updateArticles(data) {
       Client.issue(ProjectPath, this.number).updateAsync(data).then(res => {
