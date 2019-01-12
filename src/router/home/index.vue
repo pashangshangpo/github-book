@@ -126,8 +126,7 @@ export default {
       this.$router.push({
         name: 'write-articles',
         query: {
-          path: encodeURIComponent(data.path),
-          authors: encodeURIComponent(data.authors),
+          number: data.number,
         },
       })
     },
