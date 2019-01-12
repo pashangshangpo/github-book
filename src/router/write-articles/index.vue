@@ -36,8 +36,7 @@ import 'codemirror/keymap/sublime.js'
 import 'codemirror/lib/codemirror.css'
 
 import Markdown from '$common/markdown'
-import { Atob } from '$common/base64'
-import { Client, ProjectPath } from '$common/github'
+import { Client, ProjectPath, Repo } from '$common/github'
 
 export default {
   data() {
@@ -107,80 +106,18 @@ export default {
         return null
       }
 
-      let path = `${this.title}.md`
-      let actions = []
-
-      if (this.rawTitle && this.rawTitle !== this.title) {
-        actions.push({
-          action: 'create',
-          file_path: path,
-          content: this.content,
-        })
-
-        actions.push({
-          action: 'delete',
-          file_path: `${this.rawTitle}.md`,
-        })
-      } else {
-        actions.push({
-          action: this.action,
-          file_path: path,
-          content: this.content,
-        })
+      let data = {
+        title: this.title,
+        body: this.content,
       }
 
-      GitLab.createFile(ProjectId, {
-        branch: 'master',
-        commit_message: `docs: ${this.action} ${this.title}`,
-        actions: actions,
-      }).then(res => {
-        if (res.id) {
-          let authors = this.$route.query.authors
-          authors = authors ? decodeURIComponent(authors).split(',') : []
-          authors.push(res.author_name)
-          authors = _.uniq(authors)
-          authors = authors.join(' ')
-
-          Message.success(
-            this.action === 'create' ? '发布文章成功！' : '更新文章成功！'
-          )
-
-          let pathStr = encodeURIComponent(path)
-          let authorsStr = encodeURIComponent(authors)
-          let lastUpdateTimeStr = encodeURIComponent(
-            Format(res.committed_date, 'yyyy/MM/dd hh:mm:ss')
-          )
-
-          if (this.action === 'create') {
-            let { protocol, host } = location
-            let url = `${protocol}//${host}/#/article-details?path=${pathStr}&authors=${authorsStr}&lastUpdateTime=${lastUpdateTimeStr}`
-
-            SendMsg({
-              msgtype: 'markdown',
-              markdown: {
-                title: '文章发布',
-                text: `#### ${res.author_name}，刚刚发布了 [${
-                  this.title
-                }](${url}) `,
-              },
-            })
-          }
-
-          setTimeout(() => {
-            this.$router.push({
-              name: 'article-details',
-              query: {
-                path: pathStr,
-                authors: authorsStr,
-                lastUpdateTime: lastUpdateTimeStr,
-              },
-            })
-          }, 1000)
-        } else {
-          Message.error(res.message)
-        }
-      })
+      if (this.number) {
+        this.updateArticles(data)
+      }
     },
+    updateArticles(data) {
+      Client.issue(ProjectPath, this.number).updateAsync(data)
+    }
   },
 }
 </script>
