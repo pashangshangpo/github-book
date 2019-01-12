@@ -7,7 +7,14 @@
     <div class="write">
       <input class="input" type="text" autofocus="true" v-model="title" placeholder="请输入文章标题">
       <div class="edit">
-        <textarea ref="editor" v-model="content" placeholder="请输入文章内容" cols="30" rows="10"></textarea>
+        <textarea 
+          class="text" 
+          ref="editor" 
+          v-model="content" 
+          placeholder="请输入文章内容" 
+          cols="30" 
+          rows="10"
+        ></textarea>
       </div>
       <div class="tool">
         <div class="back" @click="handleBack">返回</div>
@@ -30,13 +37,14 @@ import 'codemirror/lib/codemirror.css'
 
 import Markdown from '$common/markdown'
 import { Atob } from '$common/base64'
+import { Client, ProjectPath } from '$common/github'
 
 export default {
   data() {
     return {
       action: 'create',
+      number: this.$route.query.number,
       title: '',
-      rawTitle: '',
       content: '',
     }
   },
@@ -50,23 +58,24 @@ export default {
   },
   methods: {
     init() {
-      let path = this.$route.query.path
-
-      if (path) {
+      if (this.number) {
         this.action = 'update'
 
         this.initData().then(() => {
-          this.initEditor()
+          setTimeout(() => {
+            this.initEditor()
+          })
         })
       } else {
         this.initEditor()
       }
     },
     initData() {
-      return GitLab.getFile(ProjectId, this.$route.query.path).then(res => {
-        this.title = res.file_name.split('.md')[0]
-        this.rawTitle = this.title
-        this.content = Atob(res.content)
+      return Client.issue(ProjectPath, this.number).infoAsync().then(res => {
+        res = res[0]
+        
+        this.title = res.title
+        this.content = res.body
       })
     },
     initEditor() {
@@ -237,6 +246,10 @@ export default {
       outline: none;
       overflow-y: auto;
       resize: none;
+
+      .text {
+        display: none;
+      }
     }
   }
 
