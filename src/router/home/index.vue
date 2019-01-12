@@ -3,11 +3,16 @@
     <div class="box">
       <Header></Header>
       <main class="main" ref="main">
-        <el-tabs tab-position="left">
+        <el-tabs 
+          tab-position="left"
+          v-model="editableTabsValue"
+          :before-leave="handleBeforeLeaveTabs"
+        >
           <el-tab-pane 
             v-for="tag in processTags" 
             :key="tag.name" 
             :label="tag.name"
+            :name="tag.name"
           >
             <nav>
               <ul data-id="scrollload-content">
@@ -46,6 +51,7 @@ export default {
       page: 1,
       articleLists: [],
       tags: [],
+      editableTabsValue: '全部',
       noMoreData: false,
     }
   },
@@ -82,6 +88,7 @@ export default {
             this.getArticle().then(res => {
               this.page += 1
 
+              this.articleLists = this.articleLists.concat(res)
               sl.unLock()
             })
           },
@@ -90,20 +97,21 @@ export default {
     })
   },
   methods: {
-    getArticle() {
+    getArticle(config = { labels: [] }) {
       return Repo.issuesAsync({
         page: this.page,
         per_page: 20,
+        labels: config.labels.join(','),
       }).then(res => {
         res = res[0]
 
         if (res.length === 0) {
           this.noMoreData = true
 
-          return
+          return []
         }
 
-        this.articleLists = this.articleLists.concat(res)
+        return res
       })
     },
     initTags() {
@@ -111,6 +119,16 @@ export default {
       .then(res => res[0])
       .then(res => {
         this.tags = res.filter(item => item.default === false)
+      })
+    },
+    handleBeforeLeaveTabs(name) {
+      let tag = this.tags.find(item => item.name === name)
+
+      this.page = 1
+      this.getArticle({
+        labels: tag ? [tag.name] : []
+      }).then(res => {
+        this.articleLists = this.articleLists = res
       })
     },
     handleOpenInfo(data) {
