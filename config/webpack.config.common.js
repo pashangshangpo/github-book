@@ -12,6 +12,12 @@ const resolve = (...arg) => {
 }
 
 module.exports = {
+  node: {
+    console: true,
+    fs: 'empty',
+    net: 'empty',
+    tls: 'empty'
+  },
   entry: {
     index: './src/index.js'
   },

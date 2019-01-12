@@ -63,6 +63,7 @@
     "element-ui": "^2.4.11",
     "lodash": "^4.17.11",
     "marked": "^0.5.2",
+    "octonode": "^0.9.5",
     "prismjs": "^1.15.0",
     "scrollload": "^3.2.1",
     "vue": "^2.5.21",
