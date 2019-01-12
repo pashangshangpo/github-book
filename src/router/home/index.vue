@@ -1,46 +1,50 @@
 <template>
   <div ref="wrap" class="wrap">
     <div class="box">
-    <Header></Header>
-    <main class="main" ref="main">
-      <nav class="stick">
-        <ul>
-          <li
-            class="article-item"
-            v-for="item in processArticleLists"
-            @click="handleOpenInfo(item)"
-            :key="item.id"
-            v-if="item.name.indexOf('[置顶]') !== -1"
-          >
-            <span class="title">{{ item.name }}</span>
-            <div class="tool">
-              <span class="edit" @click="handleEdit(item, $event)">编辑</span>
-              <span class="delete" @click="handleDelete(item, $event)">删除</span>
-              <time class="time">{{ item.committed_date }}</time>
-            </div>
-          </li>
-        </ul>
-      </nav>
-      <nav>
-        <ul ref="scrollloadContent">
-          <li
-            class="article-item"
-            v-for="item in processArticleLists"
-            @click="handleOpenInfo(item)"
-            :key="item.id"
-            v-if="item.name.indexOf('[置顶]') == -1"
-          >
-            <span class="title">{{ item.name }}</span>
-            <div class="tool">
-              <span class="edit" @click="handleEdit(item, $event)">编辑</span>
-              <span class="delete" @click="handleDelete(item, $event)">删除</span>
-              <time class="time">{{ item.committed_date }}</time>
-            </div>
-          </li>
-        </ul>
-      </nav>
-    </main>
-  </div>
+      <Header></Header>
+      <main class="main" ref="main">
+        <nav class="stick">
+          <ul>
+            <li
+              class="article-item"
+              v-for="item in processArticleLists"
+              @click="handleOpenInfo(item)"
+              :key="item.id"
+              v-if="item.title.indexOf('[置顶]') !== -1"
+            >
+              <span class="title">{{ item.title }}</span>
+              <div class="tool">
+                <span class="edit" @click="handleEdit(item, $event)">编辑</span>
+                <span class="delete" @click="handleDelete(item, $event)"
+                  >删除</span
+                >
+                <time class="time">{{ item.created_at }}</time>
+              </div>
+            </li>
+          </ul>
+        </nav>
+        <nav>
+          <ul ref="scrollloadContent">
+            <li
+              class="article-item"
+              v-for="item in processArticleLists"
+              @click="handleOpenInfo(item)"
+              :key="item.id"
+              v-if="item.title.indexOf('[置顶]') == -1"
+            >
+              <span class="title">{{ item.title }}</span>
+              <div class="tool">
+                <span class="edit" @click="handleEdit(item, $event)">编辑</span>
+                <span class="delete" @click="handleDelete(item, $event)"
+                  >删除</span
+                >
+                <time class="time">{{ item.created_at }}</time>
+              </div>
+            </li>
+          </ul>
+        </nav>
+      </main>
+    </div>
   </div>
 </template>
 
@@ -49,12 +53,15 @@ import _ from 'lodash'
 import { MessageBox, Message } from 'element-ui'
 import Scrollload from 'Scrollload'
 
+import { Repo } from '$common/github'
+import Format from '$common/format'
+
 export default {
   data() {
     return {
       page: 1,
       articleLists: [],
-      noMoreData: false
+      noMoreData: false,
     }
   },
   computed: {
@@ -62,25 +69,11 @@ export default {
       let articleLists = this.articleLists.map(item => {
         return {
           ...item,
-          committed_date: Format(item.committed_date, 'yyyy/MM/dd hh:mm:ss'),
+          created_at: Format(item.created_at, 'yyyy/MM/dd hh:mm:ss'),
         }
       })
 
-      return articleLists.sort((a, b) => {
-        let aTop = a.name.indexOf('[置顶]') !== -1
-        let bTop = b.name.indexOf('[置顶]') !== -1
-
-        if (aTop && bTop) {
-        }
-        else if (bTop) {
-          return 1
-        }
-        else if (aTop && bTop === false) {
-          return -1
-        }
-
-        return new Date(b.authored_date) - new Date(a.authored_date)
-      })
+      return articleLists
     },
   },
   mounted() {
@@ -94,48 +87,18 @@ export default {
           return
         }
 
-        this.initTree().then(res => {
+        this.init().then(res => {
           this.page += 1
 
-          sl.unLock()
+          // sl.unLock()
         })
-      }
+      },
     })
   },
   methods: {
-    initTree() {
-      return GitLab.getTree(ProjectId, `per_page=10&page=${this.page}`).then(async res => {
-        if (res.length <= 0){
-          this.noMoreData = true
-
-          return false
-        }
-
-        let articleLists = this.filterArticle(res)
-        let commits = []
-
-        for (let article of articleLists) {
-          commits.push(GitLab.getCommits(ProjectId, `path=${article.path}`))
-        }
-
-        await Promise.all(commits).then(res => {
-          for (let i = 0, len = res.length; i < len; i += 1) {
-            let commit = res[i]
-            let authors = []
-
-            for (let j = 0, commitLen = commit.length; j < commitLen; j += 1) {
-              authors.push(commit[j].author_name)
-            }
-
-            articleLists[i] = {
-              ...commit[0],
-              ...articleLists[i],
-              authors: _.uniq(authors),
-            }
-          }
-        })
-
-        this.articleLists = this.articleLists.concat(articleLists)
+    init() {
+      return Repo.issuesAsync().then(res => {
+        this.articleLists = res[0]
       })
     },
     handleOpenInfo(data) {
@@ -156,7 +119,7 @@ export default {
         query: {
           path: encodeURIComponent(data.path),
           authors: encodeURIComponent(data.authors),
-        }
+        },
       })
     },
     handleDelete(data, e) {
@@ -170,9 +133,9 @@ export default {
             actions: [
               {
                 action: 'delete',
-                file_path: data.path
-              }
-            ]
+                file_path: data.path,
+              },
+            ],
           }).then(res => {
             if (res.id) {
               Message.success('删除成功！')
@@ -180,8 +143,7 @@ export default {
               this.articleLists = this.articleLists.filter(item => {
                 return item.path !== data.path
               })
-            }
-            else {
+            } else {
               Message.error('删除失败！')
             }
           })
@@ -205,7 +167,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.wrap{
+.wrap {
   height: 100%;
 }
 .box {
@@ -222,11 +184,11 @@ export default {
   margin: 55px auto 0 auto;
   box-sizing: border-box;
   border-radius: 2px;
-  nav{
+  nav {
     background-color: #fff;
     padding: 0 12px;
   }
-  .stick{
+  .stick {
     margin-bottom: 20px;
     border-radius: 4px;
   }
