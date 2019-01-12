@@ -72,6 +72,7 @@ export default {
       tags: [],
       newTagValue: '',
       inputTagVisible: false,
+      username: GetData('github').username,
     }
   },
   computed: {
@@ -173,7 +174,7 @@ export default {
       let data = {
         title: this.title,
         body: this.content,
-        labels: [GetData('github').username].concat(tags.map(tag => tag.name)),
+        labels: [username].concat(tags.map(tag => tag.name)),
       }
 
       if (this.action === 'update') {
@@ -194,7 +195,7 @@ export default {
       this.tags = tags.map(tag => {
         return {
           ...tag,
-          __active: this.tags.find(item => item.name === tag.name) ? true : false
+          __active: this.tags.find(item => item.name === tag.name) || tag.name === this.username ? true : false,
         }
       })
     },
