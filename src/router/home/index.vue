@@ -197,6 +197,7 @@ export default {
 
     .edit {
       display: none;
+      margin-right: 12px;
 
       color: #0366d6;
     }
