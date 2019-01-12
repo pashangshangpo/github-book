@@ -4,20 +4,16 @@
   margin: 0 auto;
   text-align: center;
 }
-
 .form .el-input + .el-input[data-v-c2401d02] {
-  margin-top: 12px;
+    margin-top: 12px;
 }
-
 .form .btn[data-v-c2401d02] {
-  margin-top: 20px;
+    margin-top: 20px;
 }
-
 .tutorial[data-v-c2401d02] {
   text-align: center;
 }
-
 .tutorial .title[data-v-c2401d02] {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 

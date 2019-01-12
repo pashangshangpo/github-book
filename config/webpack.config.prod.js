@@ -28,7 +28,7 @@ module.exports = merge(common, {
   output: {
     path: BuildPath,
     filename: '[name].[contenthash].js',
-    publicPath: '/'
+    publicPath: './'
   },
   optimization: {
     runtimeChunk: 'single',
