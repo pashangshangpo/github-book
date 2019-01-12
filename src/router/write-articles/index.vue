@@ -122,7 +122,10 @@ export default {
       Client.issue(ProjectPath, this.number).updateAsync(data).then(res => {
         res = res[0]
 
-        if (res.id) {
+        if (res.message) {
+          Message.error(res.message, 1000)
+        }
+        else {
           Message.success('更新文章成功！', 1000)
 
           this.$router.replace({
@@ -135,10 +138,15 @@ export default {
       })
     },
     createArticles(data) {
-      Repo.createIssueAsync(data).then(res => {
+      Repo.createIssueAsync({
+        ...data
+      }).then(res => {
         res = res[0]
 
-        if (res.id) {
+        if (res.message) {
+          Message.error(res.message, 1000)
+        }
+        else {
           Message.success('发布文章成功！', 1000)
 
           this.$router.replace({
