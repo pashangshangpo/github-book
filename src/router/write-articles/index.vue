@@ -174,7 +174,7 @@ export default {
       let data = {
         title: this.title,
         body: this.content,
-        labels: [username].concat(tags.map(tag => tag.name)),
+        labels: [this.username].concat(tags.map(tag => tag.name)),
       }
 
       if (this.action === 'update') {
