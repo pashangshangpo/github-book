@@ -37,6 +37,7 @@ import 'codemirror/lib/codemirror.css'
 
 import Markdown from '$common/markdown'
 import { Client, ProjectPath, Repo } from '$common/github'
+import { GetData } from '$common/local-storage'
 
 export default {
   data() {
@@ -139,7 +140,8 @@ export default {
     },
     createArticles(data) {
       Repo.createIssueAsync({
-        ...data
+        ...data,
+        labels: [GetData('github').username],
       }).then(res => {
         res = res[0]
 
