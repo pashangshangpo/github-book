@@ -4,32 +4,18 @@
       <Header></Header>
       <main class="main" ref="main">
         <el-tabs tab-position="left">
-          <el-tab-pane label="全部">
-            <nav class="stick">
-              <ul>
-                <li
-                  class="article-item"
-                  v-for="item in processArticleLists"
-                  @click="handleOpenInfo(item)"
-                  :key="item.id"
-                  v-if="item.title.indexOf('[置顶]') !== -1"
-                >
-                  <span class="title">{{ item.title }}</span>
-                  <div class="tool">
-                    <span class="edit" @click="handleEdit(item, $event)">编辑</span>
-                    <time class="time">{{ item.created_at }}</time>
-                  </div>
-                </li>
-              </ul>
-            </nav>
+          <el-tab-pane 
+            v-for="tag in processTags" 
+            :key="tag.name" 
+            :label="tag.name"
+          >
             <nav>
-              <ul ref="scrollloadContent">
+              <ul data-id="scrollload-content">
                 <li
                   class="article-item"
                   v-for="item in processArticleLists"
                   @click="handleOpenInfo(item)"
                   :key="item.id"
-                  v-if="item.title.indexOf('[置顶]') == -1"
                 >
                   <span class="title">{{ item.title }}</span>
                   <div class="tool">
@@ -59,6 +45,7 @@ export default {
     return {
       page: 1,
       articleLists: [],
+      tags: [],
       noMoreData: false,
     }
   },
@@ -73,28 +60,37 @@ export default {
 
       return articleLists
     },
+    processTags() {
+      return [{
+        name: '全部'
+      }].concat(this.tags)
+    }
   },
   mounted() {
-    new Scrollload({
-      container: this.$refs.main,
-      content: this.$refs.scrollloadContent,
-      loadMore: sl => {
-        if (this.noMoreData) {
-          sl.noMoreData()
+    this.initTags().then(() => {
+      this.$nextTick(() => {
+        new Scrollload({
+          container: this.$refs.main,
+          content: document.querySelector('[data-id="scrollload-content"]'),
+          loadMore: sl => {
+            if (this.noMoreData) {
+              sl.noMoreData()
 
-          return
-        }
+              return
+            }
 
-        this.init().then(res => {
-          this.page += 1
+            this.getArticle().then(res => {
+              this.page += 1
 
-          sl.unLock()
+              sl.unLock()
+            })
+          },
         })
-      },
+      })
     })
   },
   methods: {
-    init() {
+    getArticle() {
       return Repo.issuesAsync({
         page: this.page,
         per_page: 20,
@@ -108,6 +104,13 @@ export default {
         }
 
         this.articleLists = this.articleLists.concat(res)
+      })
+    },
+    initTags() {
+      return Repo.labelsAsync()
+      .then(res => res[0])
+      .then(res => {
+        this.tags = res.filter(item => item.default === false)
       })
     },
     handleOpenInfo(data) {
