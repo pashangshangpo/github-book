@@ -3,40 +3,44 @@
     <div class="box">
       <Header></Header>
       <main class="main" ref="main">
-        <nav class="stick">
-          <ul>
-            <li
-              class="article-item"
-              v-for="item in processArticleLists"
-              @click="handleOpenInfo(item)"
-              :key="item.id"
-              v-if="item.title.indexOf('[置顶]') !== -1"
-            >
-              <span class="title">{{ item.title }}</span>
-              <div class="tool">
-                <span class="edit" @click="handleEdit(item, $event)">编辑</span>
-                <time class="time">{{ item.created_at }}</time>
-              </div>
-            </li>
-          </ul>
-        </nav>
-        <nav>
-          <ul ref="scrollloadContent">
-            <li
-              class="article-item"
-              v-for="item in processArticleLists"
-              @click="handleOpenInfo(item)"
-              :key="item.id"
-              v-if="item.title.indexOf('[置顶]') == -1"
-            >
-              <span class="title">{{ item.title }}</span>
-              <div class="tool">
-                <span class="edit" @click="handleEdit(item, $event)">编辑</span>
-                <time class="time">{{ item.created_at }}</time>
-              </div>
-            </li>
-          </ul>
-        </nav>
+        <el-tabs tab-position="left">
+          <el-tab-pane label="全部">
+            <nav class="stick">
+              <ul>
+                <li
+                  class="article-item"
+                  v-for="item in processArticleLists"
+                  @click="handleOpenInfo(item)"
+                  :key="item.id"
+                  v-if="item.title.indexOf('[置顶]') !== -1"
+                >
+                  <span class="title">{{ item.title }}</span>
+                  <div class="tool">
+                    <span class="edit" @click="handleEdit(item, $event)">编辑</span>
+                    <time class="time">{{ item.created_at }}</time>
+                  </div>
+                </li>
+              </ul>
+            </nav>
+            <nav>
+              <ul ref="scrollloadContent">
+                <li
+                  class="article-item"
+                  v-for="item in processArticleLists"
+                  @click="handleOpenInfo(item)"
+                  :key="item.id"
+                  v-if="item.title.indexOf('[置顶]') == -1"
+                >
+                  <span class="title">{{ item.title }}</span>
+                  <div class="tool">
+                    <span class="edit" @click="handleEdit(item, $event)">编辑</span>
+                    <time class="time">{{ item.created_at }}</time>
+                  </div>
+                </li>
+              </ul>
+            </nav>
+          </el-tab-pane>
+        </el-tabs>
       </main>
     </div>
   </div>
@@ -140,6 +144,12 @@ export default {
 }
 </script>
 
+<style lang="scss">
+.scrollload-bottom {
+  display: none;
+}
+</style>
+
 <style lang="scss" scoped>
 .wrap {
   height: 100%;
@@ -158,14 +168,12 @@ export default {
   margin: 55px auto 0 auto;
   box-sizing: border-box;
   border-radius: 2px;
+
   nav {
     background-color: #fff;
     padding: 0 12px;
   }
-  .stick {
-    margin-bottom: 20px;
-    border-radius: 4px;
-  }
+
   .article-item {
     display: flex;
     height: 42px;
