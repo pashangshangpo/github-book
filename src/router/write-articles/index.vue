@@ -93,7 +93,10 @@ export default {
       let newTagValue = this.newTagValue
 
       if (newTagValue) {
-        this.tags = _.uniq(this.tags.concat(newTagValue))
+        this.tags = _.uniq(this.tags.concat({
+          name: newTagValue,
+          __active: true,
+        }))
       }
 
       this.inputTagVisible = false
@@ -162,10 +165,12 @@ export default {
         return null
       }
 
+      let tags = this.tags.filter(tag => tag.__active)
+
       let data = {
         title: this.title,
         body: this.content,
-        labels: [GetData('github').username].concat(this.tags),
+        labels: [GetData('github').username].concat(tags.map(tag => tag.name)),
       }
 
       if (this.action === 'update') {
