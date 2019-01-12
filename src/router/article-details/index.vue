@@ -72,11 +72,13 @@ export default {
         .infoAsync()
         .then(res => {
           res = res[0]
+          
+          let lastLabel = res.labels.slice(-1)[0]
 
           this.details = {
             title: res.title,
             content: res.body,
-            author: res.labels[0].name,
+            author: lastLabel ? lastLabel.name : '',
           }
         })
         .then(res => {
