@@ -3,23 +3,25 @@
     <Header></Header>
     <main class="main">
       <div>
-        <h1 class="title">{{ name }}</h1>
+        <h1 class="title">{{ details.title }}</h1>
       </div>
       <div class="markdown" v-html="content"></div>
       <div class="position">
         <div class="tools">
-          <el-button 
-            type="primary" 
-            icon="el-icon-edit" 
+          <el-button
+            type="primary"
+            icon="el-icon-edit"
             class="button"
             @click="handleClickEdit"
-            circle></el-button>
-          <el-button 
-            type="primary" 
-            icon="el-icon-back" 
+            circle
+          ></el-button>
+          <el-button
+            type="primary"
+            icon="el-icon-back"
             class="button"
             @click="handleClickBack"
-            circle></el-button>
+            circle
+          ></el-button>
         </div>
       </div>
     </main>
@@ -27,32 +29,26 @@
 </template>
 
 <script>
-import { Atob } from '$common/base64'
 import Markdown from '$common/markdown'
 import AliMask from '$common/alimask'
+import { Repo, Client, ProjectPath } from '$common/github'
 
 export default {
   data() {
-    let { authors, lastUpdateTime } = this.$route.query
+    let { number } = this.$route.query
 
     return {
-      authors: decodeURIComponent(authors)
-        .split(',')
-        .join('  '),
-      lastUpdateTime: decodeURIComponent(lastUpdateTime),
+      number: number,
       watermarkStyle: {},
       details: {
-        name: '',
+        title: '',
         content: '',
       },
     }
   },
   computed: {
-    name() {
-      return this.details.name.split('.md')[0]
-    },
     content() {
-      let html = Markdown(Atob(this.details.content))
+      let html = Markdown(this.details.content)
       let list = html.split('\n')
       let el = document.createElement('div')
 
@@ -70,27 +66,22 @@ export default {
     this.init()
   },
   mounted() {
-    if (this.authors.trim()) {
-      this.initWatermark()
-    }
+    // if (this.authors.trim()) {
+    //   this.initWatermark()
+    // }
   },
   methods: {
     init() {
-      this.initDetails().then(() => {
-        if (this.details.name == undefined) {
-          this.$router.push({
-            name: 'home'
-          })
-        }
-      })
-    },
-    initDetails() {
-      return GitLab.getFile(ProjectId, this.$route.query.path).then(res => {
-        this.details = {
-          name: res.file_name,
-          content: res.content,
-        }
-      })
+      Client.issue(ProjectPath, 2)
+        .infoAsync()
+        .then(res => {
+          res = res[0]
+
+          this.details = {
+            title: res.title,
+            content: res.body,
+          }
+        })
     },
     initWatermark() {
       let base64 = AliMask(this.authors, {
@@ -108,14 +99,14 @@ export default {
         query: {
           path: this.$route.query.path,
           authors: this.$route.query.authors,
-        }
+        },
       })
     },
     handleClickBack() {
       this.$router.push({
-        name: 'home'
+        name: 'home',
       })
-    }
+    },
   },
 }
 </script>

@@ -116,9 +116,7 @@ export default {
       this.$router.push({
         name: 'article-details',
         query: {
-          path: encodeURIComponent(data.path),
-          lastUpdateTime: encodeURIComponent(data.committed_date),
-          authors: encodeURIComponent(data.authors),
+          number: data.number,
         },
       })
     },
