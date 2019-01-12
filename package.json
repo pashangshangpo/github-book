@@ -1,0 +1,72 @@
+{
+  "name": "gitlab-book",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "peak --type server --env local",
+    "build": "peak --type build --env prod",
+    "lint-staged": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "pretty-quick",
+      "git add"
+    ],
+    "*.{css,scss,less}": [
+      "stylelint --fix",
+      "git add"
+    ]
+  },
+  "pre-commit": [
+    "lint-staged"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.1.6",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
+    "@babel/plugin-transform-runtime": "^7.1.0",
+    "@babel/preset-env": "^7.1.6",
+    "@babel/runtime": "^7.1.5",
+    "autoprefixer": "^9.3.1",
+    "babel-loader": "^8.0.0-beta.6",
+    "clean-webpack-plugin": "^1.0.0",
+    "copy-webpack-plugin": "^4.6.0",
+    "css-hot-loader": "^1.4.2",
+    "css-loader": "^1.0.1",
+    "file-loader": "^2.0.0",
+    "html-webpack-plugin": "^4.0.0-beta.4",
+    "lint-staged": "^8.1.0",
+    "mini-css-extract-plugin": "^0.5.0",
+    "node-sass": "^4.10.0",
+    "peak": "https://github.com/pashangshangpo/peak.git",
+    "postcss": "^7.0.6",
+    "postcss-loader": "^3.0.0",
+    "pre-commit": "^1.2.2",
+    "prettier": "^1.15.2",
+    "pretty-quick": "^1.8.0",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.1",
+    "stylelint": "^9.8.0",
+    "stylelint-config-idiomatic-order": "^6.2.0",
+    "stylelint-config-standard": "^18.2.0",
+    "stylelint-scss": "^3.4.0",
+    "svg-sprite-loader": "^4.1.3",
+    "url-loader": "^1.1.2",
+    "vue-loader": "^15.4.2",
+    "vue-template-compiler": "^2.5.17",
+    "webpack": "^4.25.1",
+    "webpack-merge": "^4.1.4"
+  },
+  "dependencies": {
+    "codemirror": "^5.42.2",
+    "element-ui": "^2.4.11",
+    "lodash": "^4.17.11",
+    "marked": "^0.5.2",
+    "prismjs": "^1.15.0",
+    "scrollload": "^3.2.1",
+    "vue": "^2.5.21",
+    "vue-router": "^3.0.2",
+    "vuex": "^3.0.1"
+  }
+}

@@ -1,0 +1,282 @@
+<template>
+  <div ref="wrap" class="wrap">
+    <div class="box">
+    <Header></Header>
+    <main class="main" ref="main">
+      <nav class="stick">
+        <ul>
+          <li
+            class="article-item"
+            v-for="item in processArticleLists"
+            @click="handleOpenInfo(item)"
+            :key="item.id"
+            v-if="item.name.indexOf('[置顶]') !== -1"
+          >
+            <span class="title">{{ item.name }}</span>
+            <div class="tool">
+              <span class="edit" @click="handleEdit(item, $event)">编辑</span>
+              <span class="delete" @click="handleDelete(item, $event)">删除</span>
+              <time class="time">{{ item.committed_date }}</time>
+            </div>
+          </li>
+        </ul>
+      </nav>
+      <nav>
+        <ul ref="scrollloadContent">
+          <li
+            class="article-item"
+            v-for="item in processArticleLists"
+            @click="handleOpenInfo(item)"
+            :key="item.id"
+            v-if="item.name.indexOf('[置顶]') == -1"
+          >
+            <span class="title">{{ item.name }}</span>
+            <div class="tool">
+              <span class="edit" @click="handleEdit(item, $event)">编辑</span>
+              <span class="delete" @click="handleDelete(item, $event)">删除</span>
+              <time class="time">{{ item.committed_date }}</time>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </main>
+  </div>
+  </div>
+</template>
+
+<script>
+import _ from 'lodash'
+import { MessageBox, Message } from 'element-ui'
+import Scrollload from 'Scrollload'
+
+export default {
+  data() {
+    return {
+      page: 1,
+      articleLists: [],
+      noMoreData: false
+    }
+  },
+  computed: {
+    processArticleLists() {
+      let articleLists = this.articleLists.map(item => {
+        return {
+          ...item,
+          committed_date: Format(item.committed_date, 'yyyy/MM/dd hh:mm:ss'),
+        }
+      })
+
+      return articleLists.sort((a, b) => {
+        let aTop = a.name.indexOf('[置顶]') !== -1
+        let bTop = b.name.indexOf('[置顶]') !== -1
+
+        if (aTop && bTop) {
+        }
+        else if (bTop) {
+          return 1
+        }
+        else if (aTop && bTop === false) {
+          return -1
+        }
+
+        return new Date(b.authored_date) - new Date(a.authored_date)
+      })
+    },
+  },
+  mounted() {
+    new Scrollload({
+      container: this.$refs.main,
+      content: this.$refs.scrollloadContent,
+      loadMore: sl => {
+        if (this.noMoreData) {
+          sl.noMoreData()
+
+          return
+        }
+
+        this.initTree().then(res => {
+          this.page += 1
+
+          sl.unLock()
+        })
+      }
+    })
+  },
+  methods: {
+    initTree() {
+      return GitLab.getTree(ProjectId, `per_page=10&page=${this.page}`).then(async res => {
+        if (res.length <= 0){
+          this.noMoreData = true
+
+          return false
+        }
+
+        let articleLists = this.filterArticle(res)
+        let commits = []
+
+        for (let article of articleLists) {
+          commits.push(GitLab.getCommits(ProjectId, `path=${article.path}`))
+        }
+
+        await Promise.all(commits).then(res => {
+          for (let i = 0, len = res.length; i < len; i += 1) {
+            let commit = res[i]
+            let authors = []
+
+            for (let j = 0, commitLen = commit.length; j < commitLen; j += 1) {
+              authors.push(commit[j].author_name)
+            }
+
+            articleLists[i] = {
+              ...commit[0],
+              ...articleLists[i],
+              authors: _.uniq(authors),
+            }
+          }
+        })
+
+        this.articleLists = this.articleLists.concat(articleLists)
+      })
+    },
+    handleOpenInfo(data) {
+      this.$router.push({
+        name: 'article-details',
+        query: {
+          path: encodeURIComponent(data.path),
+          lastUpdateTime: encodeURIComponent(data.committed_date),
+          authors: encodeURIComponent(data.authors),
+        },
+      })
+    },
+    handleEdit(data, e) {
+      e.stopPropagation()
+
+      this.$router.push({
+        name: 'write-articles',
+        query: {
+          path: encodeURIComponent(data.path),
+          authors: encodeURIComponent(data.authors),
+        }
+      })
+    },
+    handleDelete(data, e) {
+      e.stopPropagation()
+
+      MessageBox.confirm(`确定要删除 ${data.name} ？`, '提示')
+        .then(() => {
+          GitLab.createFile(ProjectId, {
+            branch: 'master',
+            commit_message: `chore: 删除 ${data.name}`,
+            actions: [
+              {
+                action: 'delete',
+                file_path: data.path
+              }
+            ]
+          }).then(res => {
+            if (res.id) {
+              Message.success('删除成功！')
+
+              this.articleLists = this.articleLists.filter(item => {
+                return item.path !== data.path
+              })
+            }
+            else {
+              Message.error('删除失败！')
+            }
+          })
+        })
+        .catch(action => {})
+    },
+    filterArticle(arr) {
+      let list = arr.filter(item => {
+        return item.path.split('.').pop() === 'md' && item.name !== 'README.md'
+      })
+
+      return list.map(item => {
+        return {
+          ...item,
+          name: item.name.split('.md')[0],
+        }
+      })
+    },
+  },
+}
+</script>
+
+<style lang="scss" scoped>
+.wrap{
+  height: 100%;
+}
+.box {
+  min-height: 100%;
+  padding-bottom: 280px;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  background-color: #f6f6f6;
+}
+
+.main {
+  width: 900px;
+  margin: 55px auto 0 auto;
+  box-sizing: border-box;
+  border-radius: 2px;
+  nav{
+    background-color: #fff;
+    padding: 0 12px;
+  }
+  .stick{
+    margin-bottom: 20px;
+    border-radius: 4px;
+  }
+  .article-item {
+    display: flex;
+    height: 42px;
+    box-sizing: border-box;
+
+    align-items: center;
+    cursor: pointer;
+
+    &:not(:last-child) {
+      border-bottom: 1px dashed #ccc;
+    }
+
+    &:hover {
+      .edit,
+      .delete {
+        display: inline-block;
+      }
+    }
+
+    .title {
+      color: #0366d6;
+    }
+
+    .tool {
+      margin-left: auto;
+
+      user-select: none;
+    }
+
+    .edit {
+      display: none;
+
+      color: #0366d6;
+    }
+
+    .delete {
+      display: none;
+      margin-left: 4px;
+      margin-right: 6px;
+
+      color: red;
+    }
+
+    .time {
+      font-family: serif;
+      color: #6a737d;
+    }
+  }
+}
+</style>
