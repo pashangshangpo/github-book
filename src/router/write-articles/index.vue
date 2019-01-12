@@ -111,12 +111,44 @@ export default {
         body: this.content,
       }
 
-      if (this.number) {
+      if (this.action === 'update') {
         this.updateArticles(data)
+      }
+      else {
+        this.createArticles(data)
       }
     },
     updateArticles(data) {
-      Client.issue(ProjectPath, this.number).updateAsync(data)
+      Client.issue(ProjectPath, this.number).updateAsync(data).then(res => {
+        res = res[0]
+
+        if (res.id) {
+          Message.success('更新文章成功！', 1000)
+
+          this.$router.replace({
+            name: 'article-details',
+            query: {
+              number: res.number,
+            },
+          })
+        }
+      })
+    },
+    createArticles(data) {
+      Repo.createIssueAsync(data).then(res => {
+        res = res[0]
+
+        if (res.id) {
+          Message.success('发布文章成功！', 1000)
+
+          this.$router.replace({
+            name: 'article-details',
+            query: {
+              number: res.number,
+            },
+          })
+        }
+      })
     }
   },
 }
