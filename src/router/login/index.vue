@@ -1,6 +1,8 @@
 <template>
   <div class="box">
     <div class="form">
+      <el-input placeholder="请输入姓名" v-model="username" clearable>
+      </el-input>
       <el-input placeholder="请填写项目路径" v-model="projectPath" clearable>
       </el-input>
       <el-input placeholder="请填写github生成的token" v-model="token" clearable>
@@ -16,22 +18,34 @@
 </template>
 
 <script>
-import { SetData } from '$common/local-storage'
+import { SetData, GetData } from '$common/local-storage'
 
 export default {
   data() {
     return {
+      username: '',
       token: '',
       projectPath: '',
+    }
+  },
+  created() {
+    let data = GetData('github')
+
+    if (data) {
+      this.username = data.username
+      this.token = data.token
+      this.projectPath = data.projectPath
     }
   },
   methods: {
     handleLogin() {
       let token = this.token.trim()
       let projectPath = this.projectPath.trim()
+      let username = this.username.trim()
 
       if (token && projectPath) {
         SetData('github', {
+          username,
           token,
           projectPath,
         })
