@@ -189,6 +189,8 @@ export default {
 }
 
 .main {
+  position: relative;
+  z-index: 0;
   width: 900px;
   margin: 55px auto 0 auto;
   box-sizing: border-box;
