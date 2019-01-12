@@ -1,7 +1,7 @@
 <template>
   <header class="header">
     <div class="container">
-      <a class="title" href="/#/">大前端</a>
+      <a class="title" href="./">大前端</a>
       <a 
         class="write-articles" 
         @click="handleWriteArticles" 
